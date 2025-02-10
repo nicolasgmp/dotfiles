@@ -7,8 +7,13 @@ return {
         "fish",
         "gitignore",
         "go",
+        "gomod",
+        "gowork",
+        "gosum",
         "python",
         "typescript",
+        "ninja",
+        "rst",
       },
     },
     config = function(_, opts)

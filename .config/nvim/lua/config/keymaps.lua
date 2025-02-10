@@ -10,7 +10,8 @@ local keymap = vim.keymap
 local opts = { noremap = true, silent = true }
 
 keymap.set("v", "<C-c>", ":w !clip.exe<CR>", opts)
-
 keymap.set("n", "<C-a>", "gg<S-v>G")
-
 keymap.set("n", "te", ":tabedit")
+keymap.set("n", "<leader>tn", ":Neotest run<CR>", opts)
+keymap.set("n", "<leader>te", ":Neotest stop<CR>", opts)
+keymap.set("n", "<leader>ts", ":Neotest summary<CR>", opts)
