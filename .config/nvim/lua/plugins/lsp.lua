@@ -3,29 +3,28 @@ return {
     "williamboman/mason.nvim",
     opts = function(_, opts)
       vim.list_extend(opts.ensure_installed, {
-        "stylua",
-        "selene",
-        "luacheck",
-        "shellcheck",
-        "shfmt",
         "typescript-language-server",
         "clangd",
+        "clang-format",
         "goimports",
         "gofumpt",
         "gomodifytags",
-        "impl",
-        "delve",
+        "java-debug-adapter",
+        "java-test",
       })
     end,
   },
   {
     "neovim/nvim-lspconfig",
+    event = "BufReadPre",
     opts = {
       servers = {
-        tsserver = { enabled = false },
-        ts_ls = { enabled = false },
+        -- JAVA
+        jdtls = {},
 
         -- TYPESCRIPT/JS
+        tsserver = { enabled = false },
+        ts_ls = { enabled = false },
         vtsls = {
           filetypes = {
             "javascript",
@@ -106,7 +105,7 @@ return {
               "build.ninja"
             )(fname) or require("lspconfig.util").root_pattern("compile_commands.json", "compile_flags.txt")(
               fname
-            ) or require("lspconfig.util").find_git_ancestor(fname)
+            )
           end,
           capabilities = { offsetEncoding = { "utf-16" } },
           cmd = {
@@ -118,32 +117,9 @@ return {
             "--function-arg-placeholders",
             "--fallback-style=llvm",
           },
-          init_options = { usePlaceholders = true, completeUnimported = true, clangdFileStatus = true },
-        },
-
-        -- PYTHON
-        ruff = {
-          cmd_env = { RUFF_TRACE = "messages" },
           init_options = {
-            settings = {
-              logLevel = "error",
-            },
-          },
-          keys = {
-            {
-              "<leader>co",
-              LazyVim.lsp.action["source.organizeImports"],
-              desc = "Organize Imports",
-            },
-          },
-        },
-        ruff_lsp = {
-          keys = {
-            {
-              "<leader>co",
-              LazyVim.lsp.action["source.organizeImports"],
-              desc = "Organize Imports",
-            },
+            usePlaceholders = true,
+            completeUnimported = true,
           },
         },
 
@@ -153,7 +129,6 @@ return {
             gopls = {
               gofumpt = true,
               codelenses = {
-                gc_details = false,
                 generate = true,
                 regenerate_cgo = true,
                 run_govulncheck = true,
@@ -180,7 +155,16 @@ return {
               usePlaceholders = true,
               completeUnimported = true,
               staticcheck = true,
-              directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
+              directoryFilters = {
+                "-.git",
+                "-.vscode",
+                "-.idea",
+                "-.vscode-test",
+                "-node_modules",
+                "-vendor",
+                "-dist",
+                "-.cache",
+              },
               semanticTokens = true,
             },
           },
@@ -188,73 +172,15 @@ return {
       },
 
       setup = {
-        vtsls = function(_, opts)
-          LazyVim.lsp.on_attach(function(client, buffer)
-            client.commands["_typescript.moveToFileRefactoring"] = function(command)
-              local action, uri, range = unpack(command.arguments)
-              local function move(newf)
-                client.request(
-                  "workspace/executeCommand",
-                  { command = command.command, arguments = { action, uri, range, newf } }
-                )
-              end
-              local fname = vim.uri_to_fname(uri)
-              client.request("workspace/executeCommand", {
-                command = "typescript.tsserverRequest",
-                arguments = {
-                  "getMoveToRefactoringFileSuggestions",
-                  {
-                    file = fname,
-                    startLine = range.start.line + 1,
-                    startOffset = range.start.character + 1,
-                    endLine = range["end"].line + 1,
-                    endOffset = range["end"].character + 1,
-                  },
-                },
-              }, function(_, result)
-                local files = result.body.files
-                table.insert(files, 1, "Enter new path...")
-                vim.ui.select(files, {
-                  prompt = "Select move destination:",
-                  format_item = function(f)
-                    return vim.fn.fnamemodify(f, ":~:.")
-                  end,
-                }, function(f)
-                  if f and f:find("^Enter new path") then
-                    vim.ui.input({
-                      prompt = "Enter move destination:",
-                      default = vim.fn.fnamemodify(fname, ":h") .. "/",
-                      completion = "file",
-                    }, function(newf)
-                      return newf and move(newf)
-                    end)
-                  elseif f then
-                    move(f)
-                  end
-                end)
-              end)
-            end
-          end, "vtsls")
-
-          opts.settings.javascript =
-            vim.tbl_deep_extend("force", {}, opts.settings.typescript, opts.settings.javascript or {})
+        -- JAVA
+        jdtls = function()
+          return true
         end,
 
-        -- GOLANG
-        gopls = function(_, opts)
-          LazyVim.lsp.on_attach(function(client, _)
-            if not client.server_capabilities.semanticTokensProvider then
-              local semantic = client.config.capabilities.textDocument.semanticTokens
-              client.server_capabilities.semanticTokensProvider = {
-                full = true,
-                legend = {
-                  tokenTypes = semantic.tokenTypes,
-                  tokenModifiers = semantic.tokenModifiers,
-                },
-                range = true,
-              }
-            end
-          end, "gopls")
+        -- TYPESCRIPT
+        vtsls = function(_, opts)
+          opts.settings.javascript =
+            vim.tbl_deep_extend("force", {}, opts.settings.typescript, opts.settings.javascript or {})
         end,
       },
     },

@@ -1,30 +1,16 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
+    event = "BufRead",
     opts = {
       ensure_installed = {
         "cpp",
-        "fish",
-        "gitignore",
-        "go",
-        "gomod",
-        "gowork",
-        "gosum",
-        "python",
         "typescript",
-        "ninja",
-        "rst",
+        "java",
       },
+      highlight = { enable = true },
+      incremental_selection = { enable = true },
+      indent = { enable = true },
     },
-    config = function(_, opts)
-      require("nvim-treesitter.configs").setup(opts)
-
-      vim.filetype.add({
-        extension = {
-          mdx = "mdx",
-        },
-      })
-      vim.treesitter.language.register("markdown", "mdx")
-    end,
   },
 }

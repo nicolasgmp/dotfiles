@@ -32,3 +32,7 @@ vim.opt.splitkeep = "cursor"
 vim.opt.mouse = ""
 vim.opt.formatoptions:append({ "r" })
 vim.opt.termguicolors = true
+vim.opt.guifont = "FiraCode Nerd Font:h12"
+
+vim.cmd([[let &t_Cs = "\e[4:3m"]])
+vim.cmd([[let &t_Ce = "\e[4:0m"]])

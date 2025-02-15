@@ -1,28 +1,12 @@
 return {
   {
-    "folke/noice.nvim",
-    event = "VeryLazy",
-    dependencies = {
-      "MunifTanjim/nui.nvim",
-      "rcarriga/nvim-notify",
-    },
-  },
-  {
-    "rcarriga/nvim-notify",
-    config = function()
-      require("notify").setup({
-        render = "compact",
-        stages = "fade_in_slide_out",
-        merge_duplicates = false,
-      })
-    end,
-  },
-  {
     "nvim-lualine/lualine.nvim",
-    event = "VeryLazy",
+    event = "BufReadPre",
     opts = {
       options = {
-        theme = "solarized_dark",
+        theme = "auto",
+        section_separators = { left = "", right = "" },
+        component_separators = { left = "", right = "" },
       },
     },
     dependencies = {

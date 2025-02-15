@@ -18,3 +18,10 @@ end
 alias ls="exa --icons"
 alias ll="exa -lah --icons"
 alias config='/usr/bin/git --git-dir=/home/nicolas/.cfg/ --work-tree=/home/nicolas'
+
+function cpprun
+    set build_dir build
+    mkdir -p $build_dir
+    set filename (basename $argv .cpp)
+    g++ $argv -o $build_dir/$filename && ./$build_dir/$filename
+end

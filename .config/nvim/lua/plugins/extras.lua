@@ -1,6 +1,7 @@
 return {
   {
     "michaelb/sniprun",
+    event = "VeryLazy",
     build = "sh install.sh",
     opts = {
       display = { "NvimNotify" },
