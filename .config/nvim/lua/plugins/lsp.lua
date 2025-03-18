@@ -1,188 +1,214 @@
 return {
+  -- tools
   {
     "williamboman/mason.nvim",
     opts = function(_, opts)
       vim.list_extend(opts.ensure_installed, {
-        "typescript-language-server",
-        "clangd",
-        "clang-format",
-        "goimports",
-        "gofumpt",
-        "gomodifytags",
-        "java-debug-adapter",
-        "java-test",
+        "stylua",
+        "selene",
+        "luacheck",
+        "shellcheck",
+        "shfmt",
+        "tailwindcss-language-server",
+        "css-lsp",
       })
     end,
   },
+
+  -- ts tools
   {
-    "neovim/nvim-lspconfig",
-    event = "BufReadPre",
-    opts = {
-      servers = {
-        -- JAVA
-        jdtls = {},
+    "pmizio/typescript-tools.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+    opts = {},
+    config = function()
+      require("typescript-tools").setup({
+        server = {
+          cmd = { "typescript-language-server", "--stdio" },
+        },
+      })
+    end,
+  },
 
-        -- TYPESCRIPT/JS
-        tsserver = { enabled = false },
-        ts_ls = { enabled = false },
-        vtsls = {
-          filetypes = {
-            "javascript",
-            "javascriptreact",
-            "javascript.jsx",
-            "typescript",
-            "typescriptreact",
-            "typescript.tsx",
-          },
-          settings = {
-            complete_function_calls = true,
-            vtsls = {
-              enableMoveToFileCodeAction = true,
-              autoUseWorkspaceTsdk = true,
-              experimental = { maxInlayHintLength = 30, completion = { enableServerSideFuzzyMatch = true } },
-            },
-            typescript = {
-              updateImportsOnFileMove = { enabled = "always" },
-              suggest = { completeFunctionCalls = true },
-              inlayHints = {
-                enumMemberValues = { enabled = true },
-                functionLikeReturnTypes = { enabled = true },
-                parameterNames = { enabled = "literals" },
-                parameterTypes = { enabled = true },
-                propertyDeclarationTypes = { enabled = true },
-                variableTypes = { enabled = false },
+  -- nvim-java
+  {
+    "nvim-java/nvim-java",
+    config = false,
+    dependencies = {
+      {
+        "neovim/nvim-lspconfig",
+        opts = {
+          servers = {
+            jdtls = {
+              settings = {
+                java = {
+                  format = {
+                    settings = {
+                      indent_size = 4,
+                      useTabs = false,
+                    },
+                  },
+                },
               },
             },
           },
-          keys = {
-            {
-              "gD",
-              function()
-                LazyVim.lsp.execute({
-                  command = "typescript.goToSourceDefinition",
-                  arguments = { vim.lsp.util.make_position_params() },
-                })
-              end,
-              desc = "Goto Source Definition",
-            },
-            {
-              "gR",
-              function()
-                LazyVim.lsp.execute({
-                  command = "typescript.findAllFileReferences",
-                  arguments = { vim.uri_from_bufnr(0) },
-                })
-              end,
-              desc = "File References",
-            },
-            { "<leader>co", LazyVim.lsp.action["source.organizeImports"], desc = "Organize Imports" },
-            { "<leader>cM", LazyVim.lsp.action["source.addMissingImports.ts"], desc = "Add missing imports" },
-            { "<leader>cu", LazyVim.lsp.action["source.removeUnused.ts"], desc = "Remove unused imports" },
-            { "<leader>cD", LazyVim.lsp.action["source.fixAll.ts"], desc = "Fix all diagnostics" },
-            {
-              "<leader>cV",
-              function()
-                LazyVim.lsp.execute({ command = "typescript.selectTypeScriptVersion" })
-              end,
-              desc = "Select TS workspace version",
-            },
+          setup = {
+            jdtls = function()
+              require("java").setup({})
+            end,
           },
         },
-
-        -- C++
-        clangd = {
-          keys = {
-            { "<leader>ch", "<cmd>ClangdSwitchSourceHeader<cr>", desc = "Switch Source/Header (C/C++)" },
-          },
-          root_dir = function(fname)
-            return require("lspconfig.util").root_pattern(
-              "Makefile",
-              "configure.ac",
-              "configure.in",
-              "config.h.in",
-              "meson.build",
-              "meson_options.txt",
-              "build.ninja"
-            )(fname) or require("lspconfig.util").root_pattern("compile_commands.json", "compile_flags.txt")(
-              fname
-            )
-          end,
-          capabilities = { offsetEncoding = { "utf-16" } },
-          cmd = {
-            "clangd",
-            "--background-index",
-            "--clang-tidy",
-            "--header-insertion=iwyu",
-            "--completion-style=detailed",
-            "--function-arg-placeholders",
-            "--fallback-style=llvm",
-          },
-          init_options = {
-            usePlaceholders = true,
-            completeUnimported = true,
-          },
-        },
-
-        -- GOLANG
-        gopls = {
-          settings = {
-            gopls = {
-              gofumpt = true,
-              codelenses = {
-                generate = true,
-                regenerate_cgo = true,
-                run_govulncheck = true,
-                test = true,
-                tidy = true,
-                upgrade_dependency = true,
-                vendor = true,
-              },
-              hints = {
-                assignVariableTypes = true,
-                compositeLiteralFields = true,
-                compositeLiteralTypes = true,
-                constantValues = true,
-                functionTypeParameters = true,
-                parameterNames = true,
-                rangeVariableTypes = true,
-              },
-              analyses = {
-                nilness = true,
-                unusedparams = true,
-                unusedwrite = true,
-                useany = true,
-              },
-              usePlaceholders = true,
-              completeUnimported = true,
-              staticcheck = true,
-              directoryFilters = {
-                "-.git",
-                "-.vscode",
-                "-.idea",
-                "-.vscode-test",
-                "-node_modules",
-                "-vendor",
-                "-dist",
-                "-.cache",
-              },
-              semanticTokens = true,
-            },
-          },
-        },
-      },
-
-      setup = {
-        -- JAVA
-        jdtls = function()
-          return true
-        end,
-
-        -- TYPESCRIPT
-        vtsls = function(_, opts)
-          opts.settings.javascript =
-            vim.tbl_deep_extend("force", {}, opts.settings.typescript, opts.settings.javascript or {})
-        end,
       },
     },
+  },
+
+  -- lsp servers
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      inlay_hints = { enabled = false },
+      ---@type lspconfig.options
+      servers = {
+        cssls = {},
+        tailwindcss = {
+          root_dir = function(...)
+            return require("lspconfig.util").root_pattern(".git")(...)
+          end,
+        },
+        html = {},
+        yamlls = {
+          settings = {
+            yaml = {
+              keyOrdering = false,
+            },
+          },
+        },
+        lua_ls = {
+          single_file_support = true,
+          settings = {
+            Lua = {
+              workspace = {
+                checkThirdParty = false,
+              },
+              completion = {
+                workspaceWord = true,
+                callSnippet = "Both",
+              },
+              misc = {
+                parameters = {},
+              },
+              hint = {
+                enable = true,
+                setType = false,
+                paramType = true,
+                paramName = "Disable",
+                semicolon = "Disable",
+                arrayIndex = "Disable",
+              },
+              doc = {
+                privateName = { "^_" },
+              },
+              type = {
+                castNumberToInteger = true,
+              },
+              diagnostics = {
+                disable = { "incomplete-signature-doc", "trailing-space" },
+                groupSeverity = {
+                  strong = "Warning",
+                  strict = "Warning",
+                },
+                groupFileStatus = {
+                  ["ambiguity"] = "Opened",
+                  ["await"] = "Opened",
+                  ["codestyle"] = "None",
+                  ["duplicate"] = "Opened",
+                  ["global"] = "Opened",
+                  ["luadoc"] = "Opened",
+                  ["redefined"] = "Opened",
+                  ["strict"] = "Opened",
+                  ["strong"] = "Opened",
+                  ["type-check"] = "Opened",
+                  ["unbalanced"] = "Opened",
+                  ["unused"] = "Opened",
+                },
+                unusedLocalExclude = { "_*" },
+              },
+              format = {
+                enable = false,
+                defaultConfig = {
+                  indent_style = "space",
+                  indent_size = "2",
+                  continuation_indent_size = "2",
+                },
+              },
+            },
+          },
+        },
+      },
+      setup = {},
+    },
+  },
+
+  -- keymaps setup for LSP actions
+  {
+    "neovim/nvim-lspconfig",
+    opts = function()
+      local keys = require("lazyvim.plugins.lsp.keymaps").get()
+      vim.list_extend(keys, {
+        {
+          "gd",
+          function()
+            -- DO NOT REUSE WINDOW
+            require("telescope.builtin").lsp_definitions({ reuse_win = false })
+          end,
+          desc = "Goto Definition",
+          has = "definition",
+        },
+
+        --common to most languages
+        {
+          "<leader>co",
+          function()
+            local filetype = vim.bo.filetype
+            if filetype == "typescript" or filetype == "javascript" or filetype == "typescriptreact" then
+              vim.cmd(":TSToolsOrganizeImports")
+              return
+            end
+            LazyVim.lsp.action["source.organizeImports"]()
+          end,
+          desc = "Organize Imports",
+        },
+        {
+          "<leader>cM",
+          function()
+            local filetype = vim.bo.filetype
+            if filetype == "typescript" or filetype == "javascript" or filetype == "typescriptreact" then
+              vim.cmd(":TSToolsAddMissingImports")
+              return
+            end
+            LazyVim.lsp.action["source.addMissingImports"]()
+          end,
+          desc = "Add missing imports",
+        },
+        {
+          "<leader>cu",
+          function()
+            local filetype = vim.bo.filetype
+            if filetype == "typescript" or filetype == "javascript" or filetype == "typescriptreact" then
+              vim.cmd(":TSToolsRemoveUnusedImports")
+              return
+            end
+            LazyVim.lsp.action["source.removeUnused"]()
+          end,
+          desc = "Organize Imports",
+        },
+
+        -- java
+        { "<leader>js", ":!mvn spring-boot:run<CR>", desc = "Run Spring Boot Project" },
+        { "<leader>jt", ":JavaTestRunCurrentClass<CR>", desc = "Run Tests" },
+        { "<leader>jg", LazyVim.lsp.action["source.generate"], desc = "Generate" },
+        { "<leader>jA", LazyVim.lsp.action["source.generate.accessors"], desc = "Generate Accessors" },
+        { "<leader>jq", LazyVim.lsp.action["quickassist"], desc = "Assist" },
+      })
+    end,
   },
 }

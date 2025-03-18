@@ -1,55 +1,37 @@
 return {
   {
-    "scottmckendry/cyberdream.nvim",
-    lazy = false,
-    priority = 1000,
-    config = function()
-      require("cyberdream").setup({
-        transparent = true,
-        italic_comments = true,
-        hide_fillchars = true,
-        borderless_pickers = true,
-        terminal_colors = true,
-        cache = true,
-        saturation = 0.9,
-        variant = "auto",
-        extensions = {
-          noice = true,
-          telescope = true,
-          mini = true,
-        },
-      })
-    end,
-  },
-  {
     "craftzdog/solarized-osaka.nvim",
     lazy = false,
     priority = 1000,
-    config = function()
-      require("solarized-osaka").setup({
+    opts = function()
+      return {
         transparent = true,
         terminal_colors = true,
-        styles = {
-          comments = { italic = true },
-          keywords = { italic = true },
-          sidebars = "dark",
-          floats = "dark",
-        },
-        lualine_bold = true,
-        hide_inactive_statusline = false,
-      })
+      }
     end,
   },
   {
-    "folke/tokyonight.nvim",
+    "scottmckendry/cyberdream.nvim",
     lazy = false,
     priority = 1000,
-    opts = {},
+    opts = function()
+      return {
+        transparent = true,
+        terminal_colors = true,
+      }
+    end,
+  },
+  {
+    "rebelot/kanagawa.nvim",
+    lazy = false,
+    priority = 1000,
   },
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "cyberdream",
+      -- colorscheme = "solarized-osaka",
+      -- colorscheme = "cyberdream",
+      colorscheme = "kanagawa",
     },
   },
 }
