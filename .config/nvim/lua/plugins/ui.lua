@@ -85,7 +85,7 @@ return {
   -- Bufferline (gerenciamento de abas)
   {
     "akinsho/bufferline.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies = { "echasnovski/mini.icons" },
     config = function()
       require("bufferline").setup({
         options = {
@@ -121,7 +121,7 @@ return {
             filename = "[+] " .. filename
           end
 
-          local icon, color = require("nvim-web-devicons").get_icon_color(filename)
+          local icon, color = require("mini.icons").get("file", filename)
           return { { icon, guifg = color }, { " " }, { filename } }
         end,
       }
