@@ -96,38 +96,36 @@ return {
     end,
   },
 
-  -- Exibição de nome de arquivo no topo da tela
   {
     "b0o/incline.nvim",
-    dependencies = { "craftzdog/solarized-osaka.nvim", "rebelot/kanagawa.nvim" },
+    dependencies = { "craftzdog/solarized-osaka.nvim" },
     event = "BufReadPre",
     priority = 1200,
-    opts = function()
-      local colors = require("kanagawa.colors").setup()
-      local palette = colors.palette
-      local theme = colors.theme
-      return {
+    config = function()
+      local colors = require("solarized-osaka.colors").setup()
+      require("incline").setup({
         highlight = {
           groups = {
-            InclineNormal = { guibg = palette.sumiInk0, guifg = theme.syn.fun },
-            InclineNormalNC = { guifg = theme.syn.fun, guibg = palette.sumiInk0 },
+            InclineNormal = { guibg = colors.magenta500, guifg = colors.base04 },
+            InclineNormalNC = { guifg = colors.violet500, guibg = colors.base03 },
           },
         },
         window = { margin = { vertical = 0, horizontal = 1 } },
-        hide = { cursorline = true },
+        hide = {
+          cursorline = true,
+        },
         render = function(props)
           local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":t")
           if vim.bo[props.buf].modified then
             filename = "[+] " .. filename
           end
 
-          local icon, color = require("mini.icons").get("file", filename)
+          local icon, color = require("nvim-web-devicons").get_icon_color(filename)
           return { { icon, guifg = color }, { " " }, { filename } }
         end,
-      }
+      })
     end,
   },
-
   -- Statusline (barra de status)
   {
     "nvim-lualine/lualine.nvim",
@@ -164,7 +162,20 @@ return {
   -- Desativa o scroll automático do snacks.nvim
   {
     "snacks.nvim",
-    opts = { scroll = { enabled = false } },
+    opts = {
+      scroll = { enabled = false },
+      picker = {
+        sources = {
+          explorer = {
+            layout = {
+              layout = {
+                position = "right",
+              },
+            },
+          },
+        },
+      },
+    },
     keys = {},
   },
 

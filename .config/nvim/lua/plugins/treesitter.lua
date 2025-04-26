@@ -12,6 +12,11 @@ return {
         "java",
         "sql",
         "typescript",
+        "kotlin",
+        "java",
+        "xml",
+        "json",
+        "yaml",
       },
       query_linter = {
         enable = true,

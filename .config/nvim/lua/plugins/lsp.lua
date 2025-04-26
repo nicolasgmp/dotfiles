@@ -11,6 +11,7 @@ return {
         "shfmt",
         "tailwindcss-language-server",
         "css-lsp",
+        "ktlint",
       })
     end,
   },
@@ -20,16 +21,8 @@ return {
     "pmizio/typescript-tools.nvim",
     dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
     opts = {},
-    config = function()
-      require("typescript-tools").setup({
-        server = {
-          cmd = { "typescript-language-server", "--stdio" },
-        },
-      })
-    end,
   },
 
-  -- nvim-java
   {
     "nvim-java/nvim-java",
     config = false,
@@ -39,15 +32,9 @@ return {
         opts = {
           servers = {
             jdtls = {
-              settings = {
-                java = {
-                  format = {
-                    settings = {
-                      indent_size = 4,
-                      useTabs = false,
-                    },
-                  },
-                },
+              format = {
+                insertSpaces = true,
+                tabSize = 4,
               },
             },
           },
@@ -68,12 +55,8 @@ return {
       inlay_hints = { enabled = false },
       ---@type lspconfig.options
       servers = {
+        kotlin_language_server = {},
         cssls = {},
-        tailwindcss = {
-          root_dir = function(...)
-            return require("lspconfig.util").root_pattern(".git")(...)
-          end,
-        },
         html = {},
         yamlls = {
           settings = {
@@ -203,11 +186,32 @@ return {
         },
 
         -- java
-        { "<leader>js", ":!mvn spring-boot:run<CR>", desc = "Run Spring Boot Project" },
+        { "<leader>jm", ":!mvn spring-boot:run<CR>", desc = "Run Maven SB" },
+        { "<leader>jg", ":./gradlew bootRun", desc = "Run Gradle SB" },
+        { "<leader>jc", ":w<CR>:!javac % && java %:r<CR>", desc = "Run Main Class" },
         { "<leader>jt", ":JavaTestRunCurrentClass<CR>", desc = "Run Tests" },
-        { "<leader>jg", LazyVim.lsp.action["source.generate"], desc = "Generate" },
-        { "<leader>jA", LazyVim.lsp.action["source.generate.accessors"], desc = "Generate Accessors" },
-        { "<leader>jq", LazyVim.lsp.action["quickassist"], desc = "Assist" },
+        { "<leader>cg", LazyVim.lsp.action["source.generate"], desc = "Generate" },
+        { "<leader>cA", LazyVim.lsp.action["source.generate.accessors"], desc = "Generate Accessors" },
+        { "<leader>cq", LazyVim.lsp.action["quickassist"], desc = "Assist" },
+      })
+    end,
+  },
+
+  {
+    "stevearc/conform.nvim",
+    optional = true,
+    opts = {
+      formatters_by_ft = { kotlin = { "ktlint" } },
+    },
+  },
+  {
+    "nvimtools/none-ls.nvim",
+    optional = true,
+    opts = function(_, opts)
+      local nls = require("null-ls")
+      opts.sources = vim.list_extend(opts.sources or {}, {
+        nls.builtins.formatting.ktlint,
+        nls.builtins.diagnostics.ktlint,
       })
     end,
   },

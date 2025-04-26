@@ -62,6 +62,32 @@ function cpprun
     g++ -O2 -Wall $filename -o $build_dir/$output && ./$build_dir/$output
 end
 
+function ktcompile
+    set build_dir build
+    mkdir -p $build_dir
+    set filepath $argv[1]
+    set filename (basename $filepath .kt)
+    set output "$filename.jar"
+    kotlinc $filepath -include-runtime -d $build_dir/$output && java -jar $build_dir/$output
+end
+
+function ktrun
+    set filepath $argv[1]
+    kotlinc -script $filepath
+end
+
 set -gx TERM xterm-256color
 
 set -g pure_symbol_prompt "-> "
+
+if test -z $ASDF_DATA_DIR
+    set _asdf_shims "$HOME/.asdf/shims"
+else
+    set _asdf_shims "$ASDF_DATA_DIR/shims"
+end
+if not contains $_asdf_shims $PATH
+    set -gx --prepend PATH $_asdf_shims
+end
+set --erase _asdf_shims
+
+set -gx JAVA_HOME /usr/lib/jvm/java-17-openjdk
